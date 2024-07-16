@@ -1,10 +1,11 @@
 const Workflow = require("@saltcorn/data/models/workflow");
 const Form = require("@saltcorn/data/models/form");
+const cheerio = require("cheerio");
 
 const fs = require("fs").promises;
 const { join } = require("path");
 
-const headers = () => [
+const headers = (cfg) => [
   {
     script: `/plugins/public/cookieconsent@${
       require("./package.json").version
@@ -20,7 +21,28 @@ const headers = () => [
       require("./package.json").version
     }/cookieconsent.css`,
   },
+  { headerTag: headerTag(cfg) },
 ];
+
+const headerTag = (cfg) => {
+  let hts = [];
+
+  const proc_html = (h, cat) => {
+    if (!h) return;
+    const $ = cheerio.load(h);
+    $("script").each(function () {
+      const $this = $(this);
+      $this.attr("type", "text/plain");
+      $this.attr("data-category", cat);
+    });
+    hts.push($.html());
+  };
+  proc_html(cfg.func_html, "functionality");
+  proc_html(cfg.anal_html, "analytics");
+  proc_html(cfg.marketing_html, "marketing");
+
+  return hts.join("");
+};
 
 const buildConfigJS = async (context0) => {
   const context = context0 || {};
@@ -191,6 +213,15 @@ const configuration_workflow = () =>
                 showIf: { functionality_present: true },
               },
               {
+                name: "func_html",
+                label: "HTML",
+                type: "String",
+                fieldview: "textarea",
+                sublabel:
+                  " &lt;script&gt; tags to run when consent is granted. Only &lt;script&gt; tags are enabled",
+                showIf: { functionality_present: true },
+              },
+              {
                 input_type: "section_header",
                 label: "Analytics cookies",
               },
@@ -222,6 +253,15 @@ const configuration_workflow = () =>
                 showIf: { analytics_present: true },
               },
               {
+                name: "anal_html",
+                label: "HTML",
+                type: "String",
+                fieldview: "textarea",
+                sublabel:
+                  " &lt;script&gt; tags to run when consent is granted. Only &lt;script&gt; tags are enabled",
+                showIf: { analytics_present: true },
+              },
+              {
                 input_type: "section_header",
                 label: "Marketing cookies",
               },
@@ -250,6 +290,15 @@ const configuration_workflow = () =>
                 label: "Description",
                 type: "String",
                 fieldview: "textarea",
+                showIf: { marketing_present: true },
+              },
+              {
+                name: "marketing_html",
+                label: "HTML",
+                type: "String",
+                fieldview: "textarea",
+                sublabel:
+                  " &lt;script&gt; tags to run when consent is granted. Only &lt;script&gt; tags are enabled",
                 showIf: { marketing_present: true },
               },
             ],
