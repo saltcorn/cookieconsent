@@ -22,13 +22,12 @@ const headers = () => [
   },
 ];
 
-const buildConfigJS = async (context) => {
+const buildConfigJS = async (context0) => {
+  const context = context0 || {};
   const categories = {
     necessary: {
       readOnly: true,
     },
-    analytics: {},
-    marketing: {},
   };
   if (context.functionality_present)
     categories.functionality = { enabled: !!context.functionality_enabled };
@@ -62,9 +61,8 @@ const buildConfigJS = async (context) => {
     translations: {
       en: {
         consentModal: {
-          title: "Hello traveller, it's cookie time!",
-          description:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
+          title: context.consent_title,
+          description: context.consent_description,
           acceptAllBtn: "Accept all",
           acceptNecessaryBtn: "Reject all",
           showPreferencesBtn: "Manage preferences",
@@ -124,10 +122,6 @@ const configuration_workflow = () =>
   new Workflow({
     onDone: async (context) => {
       await buildConfigJS(context);
-
-      return {
-        context,
-      };
     },
     onStepSuccess: async (step, ctx) => {
       await buildConfigJS(ctx);
@@ -162,6 +156,38 @@ const configuration_workflow = () =>
                 sublabel: "Enabled by default",
                 type: "Bool",
               },
+              {
+                input_type: "section_header",
+                label: "Analytics cookies",
+              },
+              {
+                name: "analytics_present",
+                label: "Present",
+                sublabel: "This section is presented to user",
+                type: "Bool",
+              },
+              {
+                name: "analytics_default",
+                label: "Default",
+                sublabel: "Enabled by default",
+                type: "Bool",
+              },
+              {
+                input_type: "section_header",
+                label: "Marketing cookies",
+              },
+              {
+                name: "marketing_present",
+                label: "Present",
+                sublabel: "This section is presented to user",
+                type: "Bool",
+              },
+              {
+                name: "marketing_default",
+                label: "Default",
+                sublabel: "Enabled by default",
+                type: "Bool",
+              },
             ],
           });
         },
@@ -176,10 +202,18 @@ const configuration_workflow = () =>
                 input_type: "section_header",
                 label: "Consent modal",
               },
+              { name: "consent_title", label: "Title", type: "String" },
+              {
+                name: "consent_description",
+                label: "Description",
+                type: "String",
+                fieldview: "textarea",
+              },
               {
                 name: "consent_layout",
                 label: "Layout",
                 type: "String",
+                required: true,
                 attributes: { options: ["box", "cloud", "bar"] },
               },
               {
@@ -192,6 +226,7 @@ const configuration_workflow = () =>
                 name: "consent_posx",
                 label: "Position X",
                 type: "String",
+                required: true,
                 attributes: { options: ["left", "center", "right"] },
                 showIf: { consent_layout: ["box", "cloud"] },
               },
@@ -199,6 +234,7 @@ const configuration_workflow = () =>
                 name: "consent_posy",
                 label: "Position Y",
                 type: "String",
+                required: true,
                 attributes: { options: ["top", "middle", "bottom"] },
                 showIf: { consent_layout: ["box", "cloud"] },
               },
@@ -211,10 +247,18 @@ const configuration_workflow = () =>
                 input_type: "section_header",
                 label: "Preferences modal",
               },
+              { name: "pref_title", label: "Title", type: "String" },
+              {
+                name: "pref_description",
+                label: "Description",
+                type: "String",
+                fieldview: "textarea",
+              },
               {
                 name: "pref_layout",
                 label: "Layout",
                 type: "String",
+                required: true,
                 attributes: { options: ["box", "bar"] },
               },
               {
@@ -227,6 +271,7 @@ const configuration_workflow = () =>
                 name: "pref_posx",
                 label: "Position X",
                 type: "String",
+                required: true,
                 attributes: { options: ["left", "right"] },
                 showIf: { consent_layout: ["bar"] },
               },
