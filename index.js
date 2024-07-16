@@ -44,7 +44,7 @@ const buildConfigJS = async (context0) => {
       position:
         context.consent_layout === "bar"
           ? "bottom"
-          : `${context.consent_posy} ${context.consent_posy}`,
+          : `${context.consent_posy} ${context.consent_posx}`,
       //equalWeightButtons: false,
       flipButtons: context.consent_flip_btns,
     },
@@ -120,9 +120,6 @@ const buildConfigJS = async (context0) => {
 };
 const configuration_workflow = () =>
   new Workflow({
-    onDone: async (context) => {
-      await buildConfigJS(context);
-    },
     onStepSuccess: async (step, ctx) => {
       await buildConfigJS(ctx);
     },
