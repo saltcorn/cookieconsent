@@ -1,6 +1,6 @@
 {
   "name": "@saltcorn/cookieconsent",
-  "version": "0.2.2",
+  "version": "0.1.0",
   "description": "Cookie consent plugin for Saltcorn",
   "main": "index.js",
   "dependencies": {

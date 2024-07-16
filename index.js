@@ -4,7 +4,7 @@ const Form = require("@saltcorn/data/models/form");
 const fs = require("fs").promises;
 const { join } = require("path");
 
-const headers = [
+const headers = () => [
   {
     script: `/plugins/public/cookieconsent@${
       require("./package.json").version
@@ -37,13 +37,16 @@ const buildConfigJS = async (context) => {
       layout:
         context.consent_layout +
         (context.consent_layout_wide ? " wide" : " inline"),
-      position: "bottom",
+      position:
+        context.consent_layout === "bar"
+          ? "bottom"
+          : `${context.consent_posy} ${context.consent_posy}`,
       //equalWeightButtons: false,
       flipButtons: context.consent_flip_btns,
     },
     preferencesModal: {
-      layout: "box",
-      position: "left",
+      layout: context.pref_layout + (context.pref_layout_wide ? " wide" : ""),
+      position: context.pref_posx,
       //equalWeightButtons: true,
       flipButtons: context.pref_flip_btns,
     },
