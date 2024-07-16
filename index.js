@@ -30,11 +30,11 @@ const buildConfigJS = async (context0) => {
     },
   };
   if (context.functionality_present)
-    categories.functionality = { enabled: !!context.functionality_enabled };
+    categories.functionality = { enabled: !!context.functionality_default };
   if (context.analytics_present)
-    categories.analytics = { enabled: !!context.analytics_enabled };
+    categories.analytics = { enabled: !!context.analytics_default };
   if (context.marketing_present)
-    categories.marketing = { enabled: !!context.marketing_enabled };
+    categories.marketing = { enabled: !!context.marketing_default };
 
   const guiOptions = {
     consentModal: {
@@ -66,11 +66,10 @@ const buildConfigJS = async (context0) => {
           acceptAllBtn: "Accept all",
           acceptNecessaryBtn: "Reject all",
           showPreferencesBtn: "Manage preferences",
-          footer:
-            '<a href="#link">Privacy Policy</a>\n<a href="#link">Terms and conditions</a>',
+          footer: context.consent_footer,
         },
         preferencesModal: {
-          title: "Consent Preferences Center",
+          title: context.pref_title,
           acceptAllBtn: "Accept all",
           acceptNecessaryBtn: "Reject all",
           savePreferencesBtn: "Save preferences",
@@ -78,34 +77,45 @@ const buildConfigJS = async (context0) => {
           serviceCounterLabel: "Service|Services",
           sections: [
             {
-              title: "Cookie Usage",
-              description:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+              description: context.pref_description,
             },
             {
-              title:
-                'Strictly Necessary Cookies <span class="pm__badge">Always Enabled</span>',
-              description:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+              title: `${
+                context.nec_title || "Strictly necessary cookies"
+              } <span class="pm__badge">Always Enabled</span>`,
+              description: context.nec_description || "Necessary cookies",
               linkedCategory: "necessary",
             },
-            {
-              title: "Analytics Cookies",
-              description:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-              linkedCategory: "analytics",
-            },
-            {
-              title: "Advertisement Cookies",
-              description:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-              linkedCategory: "marketing",
-            },
-            {
-              title: "More information",
-              description:
-                'For any query in relation to my policy on cookies and your choices, please <a class="cc__link" href="#yourdomain.com">contact me</a>.',
-            },
+            ...(context.functionality_present
+              ? [
+                  {
+                    title: context.func_title || "Functionality cookies",
+                    description:
+                      context.func_description || "Functionality cookies",
+                    linkedCategory: "functionality",
+                  },
+                ]
+              : []),
+            ...(context.analytics_present
+              ? [
+                  {
+                    title: context.anal_title || "Analytics cookies",
+                    description:
+                      context.anal_description || "Analytics cookies",
+                    linkedCategory: "analytics",
+                  },
+                ]
+              : []),
+            ...(context.marketing_present
+              ? [
+                  {
+                    title: context.marketing_title || "Marketing cookies",
+                    description:
+                      context.marketing_description || "Marketing cookies",
+                    linkedCategory: "marketing",
+                  },
+                ]
+              : []),
           ],
         },
       },
@@ -138,6 +148,18 @@ const configuration_workflow = () =>
                 label: "Necessary cookies",
               },
               {
+                name: "nec_title",
+                label: "Title",
+                type: "String",
+                default: "Strictly necessary cookies",
+              },
+              {
+                name: "nec_description",
+                label: "Description",
+                type: "String",
+                fieldview: "textarea",
+              },
+              {
                 input_type: "section_header",
                 label: "Functionality cookies",
               },
@@ -152,6 +174,21 @@ const configuration_workflow = () =>
                 label: "Default",
                 sublabel: "Enabled by default",
                 type: "Bool",
+                showIf: { functionality_present: true },
+              },
+              {
+                name: "func_title",
+                label: "Title",
+                type: "String",
+                default: "Functionality cookies",
+                showIf: { functionality_present: true },
+              },
+              {
+                name: "func_description",
+                label: "Description",
+                type: "String",
+                fieldview: "textarea",
+                showIf: { functionality_present: true },
               },
               {
                 input_type: "section_header",
@@ -168,6 +205,21 @@ const configuration_workflow = () =>
                 label: "Default",
                 sublabel: "Enabled by default",
                 type: "Bool",
+                showIf: { analytics_present: true },
+              },
+              {
+                name: "anal_title",
+                label: "Title",
+                type: "String",
+                default: "Analytics cookies",
+                showIf: { analytics_present: true },
+              },
+              {
+                name: "anal_description",
+                label: "Description",
+                type: "String",
+                fieldview: "textarea",
+                showIf: { analytics_present: true },
               },
               {
                 input_type: "section_header",
@@ -184,6 +236,21 @@ const configuration_workflow = () =>
                 label: "Default",
                 sublabel: "Enabled by default",
                 type: "Bool",
+                showIf: { marketing_present: true },
+              },
+              {
+                name: "marketing_title",
+                label: "Title",
+                type: "String",
+                default: "Marketing cookies",
+                showIf: { marketing_present: true },
+              },
+              {
+                name: "marketing_description",
+                label: "Description",
+                type: "String",
+                fieldview: "textarea",
+                showIf: { marketing_present: true },
               },
             ],
           });
@@ -199,10 +266,21 @@ const configuration_workflow = () =>
                 input_type: "section_header",
                 label: "Consent modal",
               },
-              { name: "consent_title", label: "Title", type: "String" },
+              {
+                name: "consent_title",
+                label: "Title",
+                type: "String",
+                default: "Cookie consent",
+              },
               {
                 name: "consent_description",
                 label: "Description",
+                type: "String",
+                fieldview: "textarea",
+              },
+              {
+                name: "consent_footer",
+                label: "Footer",
                 type: "String",
                 fieldview: "textarea",
               },
@@ -244,7 +322,12 @@ const configuration_workflow = () =>
                 input_type: "section_header",
                 label: "Preferences modal",
               },
-              { name: "pref_title", label: "Title", type: "String" },
+              {
+                name: "pref_title",
+                label: "Title",
+                type: "String",
+                default: "Cookie Preferences Center",
+              },
               {
                 name: "pref_description",
                 label: "Description",
